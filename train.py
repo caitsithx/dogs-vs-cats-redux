@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-
+import numpy as np
 from cscreendataset import get_train_loader, get_val_loader
 from settings import *
 from utils import create_model
@@ -40,21 +40,24 @@ def train_model(model, criterion, optimizer, lr_scheduler, max_num=2,
             running_corrects = 0
             for data in data_loaders[phase]:
                 inputs, labels, _ = data
-                inputs, labels = Variable(inputs.cuda()), Variable(
-                    labels.cuda())
+                #print("labels: {}".format(labels.size()))
+                inputs = Variable(inputs.cuda())
                 optimizer.zero_grad()
                 outputs = model(inputs)
+                #print("output size:{}".format(outputs.data.size()))
+                labels = torch.LongTensor(np.array(labels.numpy(),np.long))
+                labels = Variable(labels.cuda())
                 # preds = torch.sigmoid(outputs.data)
-                print("preds size:{}".format(preds.size()))
-                print("label size:{}".format(labels.data.size()))
-                preds = torch.ge(outputs.data.select(1, 1), 0.5).view(labels[0].data.select(1, 1).size())
+                preds = torch.ge(outputs.data.select(1, 0), 0.5)
+                #print("preds size:{}".format(preds.size()))
+                #print("label size:{}".format(labels.data.size()))
                 # _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 if phase == 'train':
                     loss.backward()
                     optimizer.step()
                 running_loss += loss.data[0]
-                running_corrects += torch.sum(preds.int() == labels.data.int())
+                running_corrects += torch.sum(preds.int() == labels.data.select(1, 0).int())
             print("running_loss %d" % running_loss)
             print("running_corrects %d" % running_corrects)
             print("data_num %d" % data_loaders[phase].num)

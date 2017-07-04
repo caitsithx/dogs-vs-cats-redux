@@ -85,7 +85,7 @@ def create_res50(load_weights=False):
     model_ft = model_ft.cuda()
 
     model_ft.name = 'res50'
-    model_ft.batch_size = 24
+    model_ft.batch_size = 52
     return model_ft
 
 
