@@ -1,11 +1,12 @@
 import argparse
 import time
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-import numpy as np
+
 from cscreendataset import get_train_loader, get_val_loader
 from settings import *
 from utils import create_model
@@ -40,17 +41,17 @@ def train_model(model, criterion, optimizer, lr_scheduler, max_num=2,
             running_corrects = 0
             for data in data_loaders[phase]:
                 inputs, labels, _ = data
-                #print("labels: {}".format(labels.size()))
+                # print("labels: {}".format(labels.size()))
                 inputs = Variable(inputs.cuda())
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                #print("output size:{}".format(outputs.data.size()))
-                labels = torch.LongTensor(np.array(labels.numpy(),np.long))
+                # print("output size:{}".format(outputs.data.size()))
+                labels = torch.LongTensor(np.array(labels.numpy(), np.long))
                 labels = Variable(labels.cuda())
                 # preds = torch.sigmoid(outputs.data)
                 preds = torch.ge(outputs.data.select(1, 0), 0.5)
-                #print("preds size:{}".format(preds.size()))
-                #print("label size:{}".format(labels.data.size()))
+                # print("preds size:{}".format(preds.size()))
+                # print("label size:{}".format(labels.data.size()))
                 # _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 if phase == 'train':
